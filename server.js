@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var AWS        = require('aws-sdk');
 var Promise    = require('bluebird');
 var fs         = Promise.promisifyAll(require('fs'));
+var multer     = require('multer');
 
 //AWS S3 Connection
 AWS.config.loadFromPath('./config.json');
@@ -82,6 +83,24 @@ var authenticate = function (req, res) {
   });
   res.json({authenticated: authenticated});
 };
+/*
+app.post('/upload', upload.single('file'), function(req, res, next) {
+  console.log(req);
+  console.log(res);
+});*/
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, '/tmp/my-uploads');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now());
+  }
+});
+var upload     = multer({ dest: 'data/user1/', filename:'hello.txt' });
+app.post('/upload', upload.single('file'), function(req, res) {
+  console.log(req);
+  res.json({msg:'ok'});
+});
 
 var port = process.env.PORT || 8080;
 var router = express.Router();
@@ -99,9 +118,10 @@ router.post('/sign-in', authenticate);
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
-app.use('/listFiles', listFiles);
 app.use('/sign-in', authenticate);
+app.use('/listFiles', listFiles);
 app.use('/listLocalFiles', listLocalFiles);
+//app.use('/upload', upload);
 
 app.listen(port);
 console.log('Magic happens on port ' + port);
