@@ -2,12 +2,22 @@ var express    = require('express');
 var app        = express();             
 var bodyParser = require('body-parser');
 var AWS        = require('aws-sdk');
+var Promise    = require('bluebird');
+var fs         = Promise.promisifyAll(require('fs'));
 
 //AWS S3 Connection
 AWS.config.loadFromPath('./config.json');
 var s3 = new AWS.S3();
 var s3bucket = 'csv-bucket1';
 var marker;
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 /*
 s3.createBucket({Bucket: s3bucket}, function() {
@@ -33,6 +43,23 @@ function listAllKeys(marker, callback)
   });
 }
 
+var getLocalFiles = function (username, callback) {
+  username  = username || 'user1';
+  var direcotry = './data/' + username;
+  var result = [];
+  fs.readdir(direcotry, function (err, data) {
+    if (err) throw err;
+    result.push(data);
+  });
+};
+
+function listLocalFiles(req, res) {
+  getLocalFiles('user1', function(data){
+    console.log(data);
+    res.json(data);
+  });
+}
+
 var listFiles = function (req, res) {
   listAllKeys(marker, function () {
     console.log('file listing got from bucket');
@@ -45,18 +72,16 @@ var authenticate = function (req, res) {
     {username:'foo', password:'abc123'},
     {username:'bar', password:'123abc'}
   ];
-  console.log(users);
-  res.json({result:'ok'});
+  var authenticated = false;
+  users.forEach(function(item, index) {
+    if (item.username === req.body.username) {
+      if (item.password === req.body.password) {
+        authenticated = true;
+      }
+    }
+  });
+  res.json({authenticated: authenticated});
 };
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
 
 var port = process.env.PORT || 8080;
 var router = express.Router();
@@ -68,7 +93,7 @@ router.get('/', function(req, res) {
 
 //router.get('/sign-in', authenticate);
 //router.get('/listFiles', listFiles);
-//router.post('/auth', authenticate);
+router.post('/sign-in', authenticate);
 
 // more routes for our API will happen here
 
@@ -76,6 +101,7 @@ router.get('/', function(req, res) {
 // all of our routes will be prefixed with /api
 app.use('/listFiles', listFiles);
 app.use('/sign-in', authenticate);
+app.use('/listLocalFiles', listLocalFiles);
 
 app.listen(port);
 console.log('Magic happens on port ' + port);
