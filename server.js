@@ -91,6 +91,23 @@ app.post('/upload', upload.single('file'), function(req, res) {
   res.json({msg:'OK'});
 });
 
+var download = function (req, res) {
+  var filename = req.query.filename;
+  var username = req.query.username;
+  var path = './data/' + username + '/' + filename;
+  fs.readFile(path, 'utf8', function (err, data) {
+    if(err) throw err;
+    //res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+    res.writeHead(200, {
+      'Content-Type': 'text/csv',
+      'Content-Disposition': 'attachment; filename=' + filename,
+      'Content-Length': data.length
+    });
+    res.end(data);
+  });
+  //res.json({'message':'OK'});
+};
+
 var port = process.env.PORT || 8080;
 var router = express.Router();
 
@@ -103,6 +120,7 @@ router.get('/', function(req, res) {
 //router.get('/listFiles', listFiles);
 router.post('/sign-in', authenticate);
 router.get('/listLocalFiles', listLocalFiles);
+router.get('/download', download);
 
 // more routes for our API will happen here
 
@@ -111,7 +129,7 @@ router.get('/listLocalFiles', listLocalFiles);
 app.use('/sign-in', authenticate);
 app.use('/listFiles', listFiles);
 app.use('/listLocalFiles', listLocalFiles);
-//app.use('/upload', upload);
+app.use('/download', download);
 
 app.listen(port);
 console.log('Magic happens on port ' + port);
