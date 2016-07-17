@@ -83,22 +83,20 @@ var authenticate = function (req, res) {
   });
   res.json({authenticated: authenticated});
 };
-/*
-app.post('/upload', upload.single('file'), function(req, res, next) {
-  console.log(req);
-  console.log(res);
-});*/
+
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, '/tmp/my-uploads');
+    cb(null, './data/user1');
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now());
+    cb(null, file.originalname);
   }
 });
-var upload     = multer({ dest: 'data/user1/', filename:'hello.txt' });
+
+var upload = multer({storage: storage});
+
 app.post('/upload', upload.single('file'), function(req, res) {
-  console.log(req);
+  console.log(req.file);
   res.json({msg:'ok'});
 });
 
