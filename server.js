@@ -55,7 +55,8 @@ var getLocalFiles = function (username, callback) {
 };
 
 function listLocalFiles(req, res) {
-  getLocalFiles('user1', function(data){
+  var username = req.query.username;
+  getLocalFiles(username, function(data){
     console.log(data);
     res.json(data);
   });
@@ -70,8 +71,8 @@ var listFiles = function (req, res) {
 
 var authenticate = function (req, res) {
   var users = [
-    {username:'foo', password:'abc123'},
-    {username:'bar', password:'123abc'}
+    {username:'user1', password:'abc123'},
+    {username:'user2', password:'123abc'}
   ];
   var authenticated = false;
   users.forEach(function(item, index) {
@@ -86,7 +87,8 @@ var authenticate = function (req, res) {
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './data/user1');
+    var username = req.query.username;
+    cb(null, './data/' + username);
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname);
@@ -96,8 +98,7 @@ var storage = multer.diskStorage({
 var upload = multer({storage: storage});
 
 app.post('/upload', upload.single('file'), function(req, res) {
-  console.log(req);
-  res.json({msg:'ok'});
+  res.json({msg:'OK'});
 });
 
 var port = process.env.PORT || 8080;
