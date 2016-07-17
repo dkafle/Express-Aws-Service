@@ -20,17 +20,6 @@ app.use(function(req, res, next) {
   next();
 });
 
-/*
-s3.createBucket({Bucket: s3bucket}, function() {
-  var params = {Bucket: s3bucket, Key: 'myKey', Body: 'Howdy!'};
-  s3.putObject(params, function(err, data) {
-      if (err)       
-        console.log(err)     
-      else       
-        console.log("Successfully uploaded data to myBucket/myKey");   
-   });
-});*/
-
 var allKeys;
 function listAllKeys(marker, callback)
 {
@@ -56,8 +45,9 @@ var getLocalFiles = function (username, callback) {
 
 function listLocalFiles(req, res) {
   var username = req.query.username;
-  getLocalFiles(username, function(data){
-    console.log(data);
+  var location = './data/' + username;
+  fs.readdir(location, function(err, data) {
+    if (err) throw err;
     res.json(data);
   });
 }
@@ -112,6 +102,7 @@ router.get('/', function(req, res) {
 //router.get('/sign-in', authenticate);
 //router.get('/listFiles', listFiles);
 router.post('/sign-in', authenticate);
+router.get('/listLocalFiles', listLocalFiles);
 
 // more routes for our API will happen here
 
