@@ -97,15 +97,16 @@ var download = function (req, res) {
   var path = './data/' + username + '/' + filename;
   fs.readFile(path, 'utf8', function (err, data) {
     if(err) throw err;
-    //res.setHeader('Content-disposition', 'attachment; filename=' + filename);
-    res.writeHead(200, {
+    res.set({
       'Content-Type': 'text/csv',
       'Content-Disposition': 'attachment; filename=' + filename,
       'Content-Length': data.length
     });
-    res.end(data);
+    console.log(res.headersSent);
+    res.send(data);
+    console.log(res.headersSent);
+    res.json({message:"OK"});
   });
-  //res.json({'message':'OK'});
 };
 
 var port = process.env.PORT || 8080;
