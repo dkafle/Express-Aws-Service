@@ -112,21 +112,14 @@ var download = function (req, res) {
 var port = process.env.PORT || 8080;
 var router = express.Router();
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
     res.json(allKeys);   
 });
 
-//router.get('/sign-in', authenticate);
-//router.get('/listFiles', listFiles);
 router.post('/sign-in', authenticate);
 router.get('/listLocalFiles', listLocalFiles);
 router.get('/download', download);
 
-// more routes for our API will happen here
-
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
 app.use('/sign-in', authenticate);
 app.use('/listFiles', listFiles);
 app.use('/listLocalFiles', listLocalFiles);
